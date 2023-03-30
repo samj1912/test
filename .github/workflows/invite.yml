@@ -1,0 +1,26 @@
+name: Issues Generation
+
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  invite:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if ${{ github.event.issue.user.login }} is a maintainer
+        run: gh api /orgs/${{ github.repository_owner }}/teams/maintainers/memberships/${{ github.event.issue.user.login }} --silent
+        env:
+          GITHUB_TOKEN: ${{ secrets.INVITE_TOKEN }}
+      - name: Parse issue metadata
+        uses: stefanbuck/github-issue-parser@v3
+        id: issue-parser
+      - name: Invite user ${{ steps.issue-parser.outputs.issueparser_github_username }} to ${{ github.repository_owner }}
+        run: gh api /orgs/${{ github.repository_owner }}/memberships/${{ steps.issue-parser.outputs.issueparser_github_username }} --silent || gh api --method PUT /orgs/${{ github.repository_owner }}/memberships/${{ steps.issue-parser.outputs.issueparser_github_username }} -f role='member'
+        env:
+          GITHUB_TOKEN: ${{ secrets.INVITE_TOKEN }}
+      - name: Close Issue
+        uses: peter-evans/close-issue@v2
+        with:
+          comment: |
+            User @${{ steps.issue-parser.outputs.issueparser_github_username }} invited to the organization.

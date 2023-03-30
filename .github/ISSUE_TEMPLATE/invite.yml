@@ -1,0 +1,12 @@
+name: Invite Member
+description: Invite a new member to the organization
+title: "Invite Member: <replace-with-username>"
+body:
+  - type: input
+    id: username
+    attributes:
+      label: Github Username
+      description: Github Username of the user you wish to invite
+      placeholder: samj1912
+    validations:
+      required: true
